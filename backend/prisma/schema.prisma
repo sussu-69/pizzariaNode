@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  // A anotação @id significa que esse atributo será a chave primária
+  // A anotação @default significa que esse atributo terá um valor padrão
+  // A função uuid() é uma função do javascript que gerará um uuid aleatório
+  id            String    @id @default(uuid())
+  nome          String
+  email         String
+  senha         String
+  // A função now() é uma função do javascript que pegará a data e hora do momento que for chamada
+  criado_em     DateTime? @default(now())
+  modificado_em DateTime? @default(now())
+
+  // A anotação @@map() é utilizada para definirmos qual será o nome da tabela no banco de dados,
+  // ela mapeia toda a classe criada aqui e cria uma tabela no banco de dados.
+
+  @@map("usuarios")
+}
+
+model Categoria {
+  id            String    @id @default(uuid())
+  nome          String
+  criado_em     DateTime? @default(now())
+  atualizado_em DateTime? @default(now())
+
+  @@map("categorias")
+  // Relacionando categoria a produto, aqui no caso o prisma entende que Categoria será 1
+  // Produtos, uma lista de produto
+  produtos      Produto[]
+}
+
+model Produto {
+  id            String    @id @default(uuid())
+  nome          String
+  preco         String
+  descricao     String
+  banner        String
+  criado_em     DateTime? @default(now())
+  atualizado_em DateTime? @default(now())
+  // Relacionando produto a categoria, aqui no caso o prisma entende que Produto será N
+  // Fields será a chave estrangeira e References será a referência do atributo na tabela
+  categoria     Categoria @relation(fields: [id_categoria], references: [id])
+
+  @@map("produtos")
+  // Utilizado no references
+  id_categoria  String
+  // Relacionando produto a item, aqui o prisma entende que Produto será 1
+  // items, uma lista de item
+  items         Item[]
+}
+
+model Pedido {
+  id            String    @id @default(uuid())
+  mesa          Int
+  status        Boolean   @default(false)
+  rascunho      Boolean   @default(true)
+  nome          String?
+  criado_em     DateTime? @default(now())
+  modificado_em DateTime? @default(now())
+
+  @@map("pedidos")
+  items         Item[]
+}
+
+model Item {
+  id            String    @id @default(uuid())
+  quantidade    Int
+  criado_em     DateTime? @default(now())
+  modificado_em DateTime? @default(now())
+  pedido        Pedido    @relation(fields: [id_pedido], references: [id])
+  produto       Produto   @relation(fields: [id_produto], references: [id])
+
+  @@map("items")
+  id_pedido     String
+  id_produto    String
+}
